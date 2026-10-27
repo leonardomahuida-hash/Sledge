@@ -1,69 +1,119 @@
-# Nombre del Proyecto
+🏔️ SLEDGE — Sistema de Logística de Equipos de Rescate y Geolocalización de Recursos
 
-Una descripción breve y clara de lo que hace el proyecto y su propósito principal.
+Nota de Privacidad: Este es un repositorio privado. El acceso, distribución o copia no autorizada del código fuente y documentación asociada está estrictamente prohibido.
 
-## 🚀 Características
+SLEDGE es una plataforma web y móvil diseñada para controlar de forma centralizada todo el equipamiento de rescate utilizado en estaciones de esquí y zonas de montaña (camillas Akja, tablas espinales, radios y botiquines). Su objetivo principal es asegurar la operatividad al 100% de los insumos y optimizar los tiempos de respuesta ante situaciones de emergencia.
 
-- **Función principal 1:** Descripción de lo que hace.
-- **Función principal 2:** Descripción de lo que hace.
-- **Optimización / Diseño:** Detalles sobre rendimiento, interfaz o compatibilidad.
+👥 Créditos y Equipo
 
-## 🛠️ Tecnologías Utilizadas
+Desarrolladores: Leonardo Mahuida y Joel Lara
 
-- **Lenguaje:** Python / JavaScript / C++
-- **Framework:** React / Django / Node.js
-- **Base de Datos:** PostgreSQL / MongoDB
-- **Herramientas:** Docker / Git / Tailwind CSS
+Curso: 4MA
 
-## 📋 Requisitos Previos
+Profesor de Asignatura: Francisco Prieto
 
-Asegúrate de tener instalado lo siguiente antes de ejecutar el proyecto:
+🚀 Características Principales
 
-- Node.js (v18.0 o superior) / Python (v3.10 o superior)
-- Git
+🗺️ Rastreo y Geolocalización GPS: Visualización en tiempo real de la ubicación de los patrulleros y casetas en mapas interactivos.
 
-## 🔧 Instalación y Configuración
+📡 Modo Offline: Almacenamiento local de rutas y datos en el dispositivo mediante localStorage para garantizar la continuidad operativa en zonas de montaña sin cobertura móvil.
 
-1. **Clonar el repositorio:**
-   ```bash
-   git clone [https://github.com/tu-usuario/tu-repositorio.git](https://github.com/tu-usuario/tu-repositorio.git)
-Acceder al directorio:
+⚠️ Sistema de Alertas SOS e Inmovilidad: Botón flotante de emergencia y disparo automático de alertas por falta de movimiento en terreno.
 
-Bash
-cd tu-repositorio
-Instalar dependencias:
+🩺 Control de Stock y Vencimientos Médicos: Auditoría de botiquines y emisión automática de alertas para insumos médicos próximos a caducar (30 días).
 
-Bash
-npm install
-# o bien: pip install -r requirements.txt
-Variables de entorno (si aplica):
-Crea un archivo .env en la raíz del proyecto basándote en .env.example:
+📻 Gestión de Radiocomunicaciones: Monitoreo de niveles de batería en condiciones bajo cero, asignación por turno y gestión de canales/frecuencias.
 
-Bash
-cp .env.example .env
-🚀 Uso
-Para iniciar el proyecto en modo de desarrollo:
+🤖 Recomendaciones Inteligentes (IA + Clima): Sugerencias automáticas de equipamiento preventivo según las condiciones meteorológicas en tiempo real.
 
-Bash
-npm start
-# o bien: python main.py
-🤝 Contribuir
-Haz un Fork del proyecto.
+📊 Reportes e Historial: Registro unificado de uso en emergencias, estadísticas dinámicas y exportación de informes técnicos en PDF.
 
-Crea una rama para tu función (git checkout -b feature/NuevaFuncion).
+🛠️ Arquitectura y Tecnologías
 
-Guarda tus cambios (git commit -m 'Añade una nueva función').
+Backend (Python)
 
-Envía los cambios a tu rama (git push origin feature/NuevaFuncion).
+Programación Orientada a Objetos (POO): Clases base Equipamiento y subclases específicas (Radiocomunicacion, InsumoMedico, MedioTraslado).
 
-Abre un Pull Request.
+Seguridad y Cifrado: Encriptación de contraseñas mediante algoritmos Hash (Bcrypt / SHA-256).
 
-📄 Licencia
-Este proyecto está bajo la Licencia MIT. Consulta el archivo LICENSE para obtener más detalles.
+Generación de Reportes: Exportación dinámica de reportes en PDF (reportlab / fpdf).
 
-✉️ Contacto
-Autor: Tu Nombre
+Peticiones HTTP: Módulo requests y gestión de tokens/llaves mediante python-dotenv.
 
-GitHub: @tu-usuario
+Base de Datos (MySQL)
 
-Correo: tu-email@ejemplo.com
+Integridad Referencial: Esquema relacional con llaves foráneas y tabla intermedia ASIGNACION_RECURSO para el manejo de turnos.
+
+Lógica Almacenada (Stored Procedures): Procedimiento sp_AlertarCaducidadInsumos para el control automático de caducidad.
+
+Control de Concurrencia: Manejo de transacciones y bloqueos explícitos (FOR UPDATE) para evitar doble asignación de recursos.
+
+Automatización: Uso de MySQL Event Scheduler para el cierre automático de turnos inactivos a las 18:00 hrs.
+
+Vistas: vw_EquiposInoperativos para consultas rápidas de material en taller o descarte.
+
+Frontend
+
+Interfaz Dinámica: HTML5, CSS3 y JavaScript vanilla.
+
+Visualización Geográfica: Integración de mapa interactivo con Leaflet.js / OpenStreetMap.
+
+Gráficos Estadísticos: Chart.js sobre contenedores HTML5 <canvas>.
+
+📋 Requisitos Previos
+
+Antes de clonar e instalar este repositorio, asegúrate de contar con:
+
+Python: versión 3.10 o superior.
+
+MySQL Server: versión 8.0 o superior.
+
+Git: configurado con acceso por clave SSH o Token Personal al repositorio privado.
+
+🔧 Instalación y Configuración
+
+Clonar el repositorio privado:
+
+git clone git@github.com:tu-usuario-o-organizacion/sledge.git
+cd sledge
+
+
+Crear y activar un entorno virtual de Python:
+
+# En Linux / macOS:
+python3 -m venv venv
+source venv/bin/activate
+
+# En Windows:
+python -m venv venv
+venv\Scripts\activate
+
+
+Instalar dependencias requeridas:
+
+pip install -r requirements.txt
+
+
+Configurar las variables de entorno:
+Crea un archivo .env en la raíz del proyecto basándote en la plantilla:
+
+DB_HOST=localhost
+DB_USER=tu_usuario
+DB_PASSWORD=tu_contraseña
+DB_NAME=sledge_db
+WEATHER_API_KEY=tu_api_key_clima
+AI_API_KEY=tu_api_key_ia
+SECRET_KEY=clave_secreta_sesion
+
+
+Cargar la Base de Datos:
+Importa el esquema relacional, vistas y procedimientos en MySQL:
+
+mysql -u tu_usuario -p sledge_db < database/schema.sql
+
+
+🚀 Ejecución del Sistema
+
+Iniciar el servidor Backend:
+
+python main.py
