@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Configuración</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+
+    <div class="main-wrapper">
+      <header class="top-app-bar" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <a href="/usuario" style="color: inherit; text-decoration: none; display: flex; align-items: center;">
+            <span class="material-symbols-rounded" style="font-size: 28px;">arrow_back</span>
+          </a>
+          <h1 style="font-size: 22px; font-weight: 500; margin: 0;">Preferencias de la aplicación</h1>
+        </div>
+      </header>
+
+      <main class="screen-content" style="padding: 16px 20px; display: flex; flex-direction: column; gap: 24px;">
+        <details class="settings-section settings-accordion" open>
+          <summary class="settings-accordion-title"><span class="material-symbols-rounded icon-blue">palette</span><span>Apariencia</span><span class="material-symbols-rounded accordion-chevron">expand_more</span></summary>
+          <div class="theme-palette-options" role="radiogroup" aria-label="Paleta visual">
+            <label class="theme-palette-card" data-palette="cumbre">
+              <input type="radio" name="themePalette" value="cumbre">
+              <span class="theme-swatch" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <strong>Cumbre &amp; Confianza</strong><small>Alpina corporativa · Predeterminada</small>
+            </label>
+            <label class="theme-palette-card" data-palette="roca">
+              <input type="radio" name="themePalette" value="roca">
+              <span class="theme-swatch theme-swatch-roca" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <strong>Roca &amp; Rendimiento</strong><small>Industrial tecnológica</small>
+            </label>
+            <label class="theme-palette-card" data-palette="nieve-nocturna">
+              <input type="radio" name="themePalette" value="nieve-nocturna">
+              <span class="theme-swatch theme-swatch-night" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <strong>Nieve Nocturna</strong><small>Modo oscuro avanzado</small>
+            </label>
+            <label class="theme-palette-card" data-palette="sombra-alpina">
+              <input type="radio" name="themePalette" value="sombra-alpina">
+              <span class="theme-swatch theme-swatch-alpine" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <strong>Sombra Alpina</strong><small>Azul y gris oscuro</small>
+            </label>
+            <label class="theme-palette-card" data-palette="tormenta-nocturna">
+              <input type="radio" name="themePalette" value="tormenta-nocturna">
+              <span class="theme-swatch theme-swatch-storm" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+              <strong>Tormenta Nocturna</strong><small>Negro AMOLED</small>
+            </label>
+          </div>
+          <p id="themeSaveStatus" class="settings-status" role="status" aria-live="polite"></p>
+        </details>
+
+        <details class="settings-section settings-accordion">
+          <summary class="settings-accordion-title"><span class="material-symbols-rounded icon-blue">tune</span><span>Preferencias</span><span class="material-symbols-rounded accordion-chevron">expand_more</span></summary>
+        <section class="settings-section">
+          <div class="section-title">
+            <span class="material-symbols-rounded icon-blue">language</span>
+            <h2>Idioma y región</h2>
+          </div>
+
+          <div class="settings-card-group">
+            <label class="settings-item">
+              <div class="settings-text">
+                <div class="setting-name">Idioma de la aplicación</div>
+                <div class="setting-desc">Cambia el idioma de la interfaz y los mapas.</div>
+              </div>
+              <div class="setting-action">
+                <select id="selectIdioma" class="settings-select" aria-label="Idioma">
+                  <option value="es">Español</option><option value="en">English</option><option value="pt">Português</option>
+                </select>
+              </div>
+            </label>
+
+            <label class="settings-item">
+              <div class="settings-text">
+                <div class="setting-name">Unidades de medida</div>
+                <div class="setting-desc">Mostrar distancias en kilómetros (km) o millas (mi).</div>
+              </div>
+              <div class="setting-action">
+                <select id="selectUnidad" class="settings-select" aria-label="Unidades">
+                  <option value="km">km</option><option value="mi">mi</option>
+                </select>
+              </div>
+            </label>
+          </div>
+        </section>
+        <section class="settings-section">
+          <div class="section-title">
+            <span class="material-symbols-rounded icon-rose">visibility</span>
+            <h2>Accesibilidad</h2>
+          </div>
+
+          <div class="settings-card-group">
+            <div class="settings-item">
+              <div class="settings-text">
+                <div class="setting-name">Texto grande / Alto contraste</div>
+                <div class="setting-desc">Optimiza la lectura de nombres de refugios y alertas.</div>
+              </div>
+              <div class="accessibility-switches">
+                <label class="m3-switch" title="Alto contraste"><input type="checkbox" id="switchAltoContraste" data-setting="highContrast"><span class="slider"></span></label>
+                <label class="m3-switch" title="Texto grande"><input type="checkbox" data-setting="largeText"><span class="slider"></span></label>
+              </div>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-text">
+                <div class="setting-name">Guiado por voz en mapa</div>
+                <div class="setting-desc">Dicta las instrucciones de llegada en voz alta.</div>
+              </div>
+              <label class="m3-switch">
+                <input type="checkbox" id="switchGuiadoVoz" data-setting="voiceGuidance">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-text">
+                <div class="setting-name">Alertas habilitadas</div>
+                <div class="setting-desc">Permite avisos visuales y del navegador.</div>
+              </div>
+              <label class="m3-switch">
+                <input type="checkbox" data-setting="alertsEnabled">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-text">
+                <div class="setting-name">Alertas por vibración intensa</div>
+                <div class="setting-desc">Emite vibraciones fuertes al recibir alertas críticas.</div>
+              </div>
+              <label class="m3-switch">
+                <input type="checkbox" id="switchVibracion" data-setting="vibration">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <div class="section-title">
+            <span class="material-symbols-rounded icon-amber">lock</span>
+            <h2>Privacidad y Seguridad</h2>
+          </div>
+
+          <div class="settings-card-group">
+            <div class="settings-item">
+              <div class="settings-text">
+                <div class="setting-name">Modo incógnito en mapa</div>
+                <div class="setting-desc">No guardar el historial de los refugios buscados.</div>
+              </div>
+              <label class="m3-switch">
+                <input type="checkbox" id="switchIncognito" data-setting="incognito">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="settings-item">
+              <div class="settings-text">
+                <div class="setting-name">Compartir ubicación de emergencia</div>
+                <div class="setting-desc">Envía tu posición a tus contactos si estás en peligro.</div>
+              </div>
+              <label class="m3-switch">
+                <input type="checkbox" id="switchCompartirUbicacion" data-setting="shareLocation">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </section>
+        </details>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="/js/client.js"></script>
+</body>
+</html>

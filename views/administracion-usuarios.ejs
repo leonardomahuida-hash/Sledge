@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Gestión de usuarios</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+    <div class="main-wrapper">
+      <header class="top-app-bar"><a class="admin-back-link" href="/administracion">Administración</a><h1>Gestión de usuarios</h1></header>
+      <main class="screen-content settings-screen">
+        <p class="admin-security-note">Solo Super Admin puede consultar esta lista y modificar cuentas. Las contraseñas no se muestran ni se editan desde aquí.</p>
+        <details class="admin-user-create">
+          <summary>Incorporar personal</summary>
+          <form id="adminUserCreateForm">
+            <label>Nombre<input name="nombre" maxlength="120" required></label>
+            <label>RUT<input name="rut" maxlength="9" required></label>
+            <label>Correo electrónico<input name="gmail" type="email" maxlength="254" required></label>
+            <label>Contraseña temporal<input name="password" type="password" minlength="8" autocomplete="new-password" required></label>
+            <label>Rol
+              <select name="rol" id="adminNewUserRole" required>
+                <option value="">Selecciona un rol</option>
+                <% ['Ski Patrol', 'Operador de Refugio', 'Mantenimiento', 'Admin'].forEach(role => { %><option value="<%= role %>"><%= role %></option><% }); %>
+              </select>
+            </label>
+            <label id="adminNewUserExperienceField" hidden>Nivel de experiencia
+              <select name="nivel_experiencia">
+                <option value="">Selecciona un nivel</option>
+                <% ['Junior', 'Intermedio', 'Senior', 'Especialista'].forEach(level => { %><option value="<%= level %>"><%= level %></option><% }); %>
+              </select>
+            </label>
+            <button type="submit" class="medical-save">Crear cuenta</button>
+            <p id="adminUserCreateStatus" role="status" aria-live="polite"></p>
+          </form>
+        </details>
+        <section class="admin-user-filters" aria-label="Buscar y filtrar usuarios">
+          <label>Buscar usuario<input id="adminUserSearch" type="search" placeholder="Nombre o correo"></label>
+          <label>Rol
+            <select id="adminUserRoleFilter">
+              <option value="">Todos los roles</option>
+              <% roles.filter(role => role !== 'Super Admin').forEach(role => { %><option value="<%= role %>"><%= role %></option><% }); %>
+            </select>
+          </label>
+          <label class="admin-equipped-filter"><input id="adminUserEquipmentFilter" type="checkbox"> Con equipamiento asignado</label>
+          <span id="adminUserResultCount" class="admin-user-result-count"></span>
+        </section>
+        <div class="admin-users-table-wrap">
+          <table class="admin-users-table">
+            <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Equipos activos</th><th>Acciones</th></tr></thead>
+            <tbody id="adminUsersTableBody">
+              <% users.forEach(account => { %>
+                <tr data-user-row="<%= account.id %>" data-user-name="<%= account.nombre.toLowerCase() %>" data-user-email="<%= account.gmail.toLowerCase() %>" data-user-role="<%= account.rol %>" data-user-equipment="<%= account.equipamiento_asignado %>">
+                  <td><% if (account.gmail.trim().toLowerCase() === superAdminEmail) { %><strong><%= account.nombre %></strong><% } else { %><input class="admin-user-name" value="<%= account.nombre %>" maxlength="120" aria-label="Nombre"><% } %></td>
+                  <td><% if (account.gmail.trim().toLowerCase() === superAdminEmail) { %><%= account.gmail %><% } else { %><input class="admin-user-email" type="email" value="<%= account.gmail %>" maxlength="254" aria-label="Correo"><% } %></td>
+                  <td class="admin-current-role">
+                    <% if (account.gmail.trim().toLowerCase() === superAdminEmail) { %>Super Admin protegido<% } else { %>
+                      <select class="admin-user-role" aria-label="Rol para <%= account.nombre %>">
+                        <% roles.filter(role => role !== 'Super Admin').forEach(role => { %><option value="<%= role %>" <%= role === account.rol ? 'selected' : '' %>><%= role %></option><% }); %>
+                      </select>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (account.gmail.trim().toLowerCase() === superAdminEmail) { %>Activo<% } else { %>
+                      <select class="admin-user-active" aria-label="Estado de <%= account.nombre %>">
+                        <option value="1" <%= Number(account.activo) === 1 ? 'selected' : '' %>>Activo</option>
+                        <option value="0" <%= Number(account.activo) === 0 ? 'selected' : '' %>>Inactivo</option>
+                      </select>
+                    <% } %>
+                  </td>
+                  <td><%= account.equipamiento_asignado %></td>
+                  <td class="admin-user-actions">
+                    <% if (account.gmail.trim().toLowerCase() === superAdminEmail) { %><strong>Cuenta protegida</strong><% } else { %>
+                      <button type="button" class="medical-save" data-save-user>Guardar</button>
+                      <button type="button" class="medical-cancel" data-disable-user>Dar de baja</button>
+                      <button type="button" class="medical-cancel" data-delete-user>Eliminar</button>
+                      <span class="user-role-status" role="status" aria-live="polite"></span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+              <% if (!users.length) { %><tr><td colspan="6">No hay usuarios registrados.</td></tr><% } %>
+            </tbody>
+          </table>
+        </div>
+        <p id="adminUsersEmptyFilter" class="admin-users-empty-filter" hidden>No hay usuarios que coincidan con los filtros.</p>
+      </main>
+    </div>
+  </div>
+  <script src="/js/client.js"></script>
+</body>
+</html>

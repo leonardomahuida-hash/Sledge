@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Turnos</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/usuario.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+    <div class="main-wrapper">
+      <header class="top-app-bar">
+        <h1>Turnos e historial</h1>
+        <a href="/ajustes" class="icon-btn" aria-label="Ajustes"><span class="material-symbols-rounded">settings</span></a>
+      </header>
+      <main class="screen-content shift-screen">
+        <% const totalHoras = turnos.reduce((total, turno) => {
+          if (!turno.hora_inicio || !turno.hora_fin || turno.estado === 'Descanso') return total;
+          const [inicioHora, inicioMinuto] = turno.hora_inicio.split(':').map(Number);
+          const [finHora, finMinuto] = turno.hora_fin.split(':').map(Number);
+          let minutos = (finHora * 60 + finMinuto) - (inicioHora * 60 + inicioMinuto);
+          if (minutos < 0) minutos += 24 * 60;
+          return total + minutos / 60;
+        }, 0); %>
+        <section class="shift-summary" aria-label="Resumen de horas">
+          <div><span>Horas operativas registradas</span><strong><%= totalHoras.toFixed(1) %> h</strong></div>
+          <div><span>Registros de turno</span><strong><%= turnos.length %></strong></div>
+        </section>
+
+        <section class="shift-calendar" data-turnos="<%= JSON.stringify(turnos) %>">
+          <div class="shift-calendar-header">
+            <div><p class="shift-calendar-eyebrow">Calendario e historial</p><h2 id="shiftMonthLabel"></h2></div>
+            <div class="shift-calendar-controls">
+              <button type="button" class="icon-btn" id="previousShiftMonth" aria-label="Mes anterior"><span class="material-symbols-rounded">chevron_left</span></button>
+              <button type="button" class="icon-btn" id="nextShiftMonth" aria-label="Mes siguiente"><span class="material-symbols-rounded">chevron_right</span></button>
+            </div>
+          </div>
+          <div class="shift-calendar-weekdays" aria-hidden="true"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+          <div id="shiftCalendarDays" class="shift-calendar-days"></div>
+          <div class="shift-calendar-footer"><span class="shift-calendar-legend"><span class="shift-calendar-dot"></span>Turno registrado</span><span id="shiftDaysCount"></span></div>
+        </section>
+
+        <% if (puedeGestionarTurnos) { %>
+          <section class="shift-entry" aria-labelledby="shiftEntryTitle">
+            <header class="shift-entry-header">
+              <span class="material-symbols-rounded">assignment_ind</span>
+              <div><h2 id="shiftEntryTitle">Asignar turno</h2><p>Selecciona a la persona y define su horario y función.</p></div>
+            </header>
+            <form id="shiftForm" class="shift-form">
+              <label class="shift-field">Trabajador
+                <select name="usuario_id" class="shift-person-select" required>
+                  <% usuarios.forEach(persona => { %><option value="<%= persona.id %>"><%= persona.nombre %> · <%= persona.rol %></option><% }); %>
+                </select>
+              </label>
+              <label class="shift-field">Fecha<input type="date" name="fecha" required></label>
+              <label class="shift-field">Hora de inicio<input type="time" name="hora_inicio"></label>
+              <label class="shift-field">Hora de término<input type="time" name="hora_fin"></label>
+              <label class="shift-field">Estado<select name="estado"><option value="Operativo">Operativo</option><option value="Descanso">Descanso</option></select></label>
+              <label class="shift-field">Rol asignado<select name="rol"><option value="Operador de Refugio">Operador de Refugio</option><option value="Admin">Admin</option><option value="Ski Patrol">Ski Patrol</option><option value="Mantenimiento">Mantenimiento</option><option value="Usuario / Esquiador">Usuario / Esquiador</option></select></label>
+              <div class="shift-form-footer"><p id="shiftFormStatus" role="status" aria-live="polite"></p><button class="btn-filled" type="submit"><span class="material-symbols-rounded">save</span>Guardar turno</button></div>
+            </form>
+          </section>
+        <% } %>
+
+        <section class="shift-history">
+          <h2>Historial</h2>
+          <% if (!turnos.length) { %><p class="shift-empty">Todavía no hay turnos registrados.</p><% } %>
+          <% turnos.forEach(turno => { %>
+            <article class="shift-history-row">
+              <div><strong><%= turno.nombre_usuario %></strong><span><%= turno.fecha %> · <%= turno.rol %></span></div>
+              <div><strong><%= turno.estado %></strong><span><%= turno.hora_inicio && turno.hora_fin ? `${turno.hora_inicio} - ${turno.hora_fin}` : 'Sin horas registradas' %></span></div>
+            </article>
+            <% if (turno.estado === 'Concluido') { %>
+              <article class="shift-close-summary"><strong>Formulario de fin de turno</strong><p><%= turno.cierre_desarrollo || 'Cierre registrado.' %></p><% if (turno.cierre_rescate) { %><p><strong>Rescate:</strong> <%= turno.cierre_rescate %></p><% } %></article>
+            <% } else { %>
+              <form class="shift-close-form" data-turn-id="<%= turno.id %>">
+                <h3>Fin de jornada / misión</h3>
+                <label>Desarrollo del día (obligatorio)<textarea name="desarrollo" minlength="10" maxlength="3000" required></textarea></label>
+                <label>Detalle del rescate (si corresponde)<textarea name="rescate" maxlength="3000"></textarea></label>
+                <% if (botiquines.length) { %>
+                  <label>Botiquín utilizado
+                    <select name="botiquin_id" data-medkit-select required>
+                      <% botiquines.forEach(kit => { %>
+                        <option value="<%= kit.id %>" data-insumos="<%= JSON.stringify(kit.insumos) %>"><%= kit.nombre %> · <%= kit.codigo %> · <%= kit.estado %></option>
+                      <% }); %>
+                    </select>
+                  </label>
+                  <div class="medkit-consumption-list" data-medkit-consumables></div>
+                <% } else { %>
+                  <input type="hidden" name="botiquin_id" value="0">
+                  <p>No hay botiquines con catálogo de insumos; el formulario de cierre sigue siendo obligatorio.</p>
+                <% } %>
+                <p class="shift-close-status" role="status" aria-live="polite"></p>
+                <button type="submit">Registrar cierre obligatorio</button>
+              </form>
+            <% } %>
+          <% }); %>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="/js/client.js"></script>
+</body>
+</html>

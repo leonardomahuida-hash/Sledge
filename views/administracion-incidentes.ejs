@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Historial de incidentes</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+    <div class="main-wrapper">
+      <header class="top-app-bar"><h1>Historial de Incidentes</h1></header>
+      <main class="screen-content settings-screen">
+        <nav class="admin-tabs" aria-label="Secciones de administración">
+          <% if (user.rol === 'Admin' || user.rol === 'Super Admin') { %><a href="/administracion#historial-turnos">Historial de Turnos</a><% } %>
+          <a href="#reportar-incidente">Reportar incidente</a>
+        </nav>
+        <section id="reportar-incidente" class="climate-card">
+          <h2>Reportar Incidente / Accidente</h2>
+          <p>La ubicación GPS se obtiene al abrir el formulario. Permite el acceso a la ubicación para registrar el punto del suceso.</p>
+          <form id="incidentForm" class="climate-form">
+            <label>Tipo
+              <select name="tipo" required><option value="Incidente">Incidente</option><option value="Accidente">Accidente</option></select>
+            </label>
+            <label>Descripción
+              <textarea name="descripcion" rows="4" minlength="5" maxlength="3000" required></textarea>
+            </label>
+            <input type="hidden" name="latitud">
+            <input type="hidden" name="longitud">
+            <p id="incidentLocationStatus" role="status" aria-live="polite"></p>
+            <button type="submit" class="medical-save">Registrar suceso</button>
+            <p id="incidentFormStatus" role="status" aria-live="polite"></p>
+          </form>
+        </section>
+        <section class="admin-history-section">
+          <h2>Sucesos registrados</h2>
+          <% if (!incidentes.length) { %><p>No hay incidentes reportados.</p><% } %>
+          <% incidentes.forEach(incidente => { %>
+            <article class="admin-history-row incident-history-row">
+              <div><strong><%= incidente.tipo %></strong><span><%= incidente.creado_en %> · <%= incidente.reportado_por %></span></div>
+              <div><span><%= incidente.descripcion %></span><span>GPS: <%= incidente.latitud %>, <%= incidente.longitud %></span></div>
+              <a href="https://www.openstreetmap.org/?mlat=<%= incidente.latitud %>&mlon=<%= incidente.longitud %>#map=16/<%= incidente.latitud %>/<%= incidente.longitud %>" target="_blank" rel="noreferrer">Ver ubicación</a>
+            </article>
+          <% }); %>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="/js/client.js"></script>
+</body>
+</html>

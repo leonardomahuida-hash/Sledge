@@ -1,0 +1,161 @@
+.settings-animated .material-symbols-rounded {
+  transition: transform 550ms cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.settings-animated:hover .material-symbols-rounded,
+.settings-animated:focus-visible .material-symbols-rounded {
+  transform: rotate(180deg);
+}
+
+.shift-stat-toggle {
+  width: 100%;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.shift-stat-chevron {
+  transition: transform 180ms ease;
+}
+
+.shift-stat-toggle[aria-expanded="true"] .shift-stat-chevron {
+  transform: rotate(180deg);
+}
+
+.shift-calendar {
+  width: 100%;
+  max-width: 560px;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--outlineVariant);
+  border-radius: 18px;
+  background: var(--surfaceContainerLow);
+  text-align: left;
+}
+
+.shift-calendar[hidden] {
+  display: none;
+}
+
+.shift-calendar-header,
+.shift-calendar-controls,
+.shift-calendar-footer,
+.shift-calendar-legend {
+  display: flex;
+  align-items: center;
+}
+
+.shift-calendar-header,
+.shift-calendar-footer {
+  justify-content: space-between;
+}
+
+.shift-calendar-eyebrow {
+  margin-bottom: 5px;
+  color: var(--onSurfaceVariant);
+  font-size: 12px;
+}
+
+.shift-calendar-header h2 {
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.shift-calendar-controls {
+  gap: 4px;
+}
+
+.shift-calendar-controls .icon-btn {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--onSurface);
+  cursor: pointer;
+}
+
+.shift-calendar-controls .icon-btn:hover {
+  background: var(--surfaceContainerHighest);
+}
+
+.shift-calendar-weekdays,
+.shift-calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  text-align: center;
+}
+
+.shift-calendar-weekdays {
+  margin: 18px 0 8px;
+  color: var(--onSurfaceVariant);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.shift-calendar-weekdays span,
+.shift-calendar-empty,
+.shift-calendar-day {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+}
+
+.shift-calendar-day {
+  width: 100%;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--onSurface);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.shift-calendar-day:hover {
+  background: var(--surfaceContainerHighest);
+}
+
+.shift-calendar-day:active {
+  transform: scale(.92);
+}
+
+.shift-calendar-day.is-worked {
+  background: var(--primary);
+  color: var(--onPrimary);
+  font-weight: 700;
+}
+
+.shift-calendar-day:focus-visible,
+.shift-calendar-controls .icon-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.shift-calendar-footer {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--outlineVariant);
+  color: var(--onSurfaceVariant);
+  font-size: 13px;
+}
+
+.shift-calendar-legend {
+  gap: 8px;
+}
+
+.shift-calendar-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.shift-save-status {
+  min-height: 16px;
+  margin-top: 10px;
+  color: var(--onSurfaceVariant);
+  font-size: 12px;
+}

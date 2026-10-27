@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Auditoría global</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+    <div class="main-wrapper">
+      <header class="top-app-bar">
+        <a class="admin-back-link" href="/administracion">Administración</a>
+        <h1>Auditoría global</h1>
+      </header>
+      <main class="screen-content settings-screen">
+        <p class="admin-security-note">Se muestran las últimas 500 operaciones de escritura autenticadas. No se almacenan contraseñas ni contenido de formularios.</p>
+        <div class="admin-users-table-wrap">
+          <table class="admin-users-table">
+            <thead><tr><th>Fecha</th><th>Usuario</th><th>Rol</th><th>Operación</th><th>Recurso</th><th>HTTP</th><th>IP</th></tr></thead>
+            <tbody>
+              <% eventos.forEach(evento => { %>
+                <tr>
+                  <td><time><%= evento.creado_en %></time></td>
+                  <td><%= evento.correo || `ID ${evento.usuario_id || 'eliminado'}` %></td>
+                  <td><%= evento.rol %></td>
+                  <td><%= evento.metodo %></td>
+                  <td><code><%= evento.recurso %></code></td>
+                  <td><%= evento.codigo_respuesta %></td>
+                  <td><%= evento.ip || 'No disponible' %></td>
+                </tr>
+              <% }); %>
+              <% if (!eventos.length) { %><tr><td colspan="7">Aún no hay operaciones registradas.</td></tr><% } %>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script src="/js/client.js"></script>
+</body>
+</html>

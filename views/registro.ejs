@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Crear Cuenta</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('/img/bg-mountain.jpg') no-repeat center center fixed; background-size: cover;">
+  <div style="width: 100%; max-width: 420px; padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+    
+    <div style="background: rgba(36, 30, 29, 0.88); backdrop-filter: blur(12px); border-radius: 28px; padding: 24px; border: 1px solid rgba(255, 255, 255, 0.12);">
+      <h2 style="color: var(--onSurface); margin-bottom: 16px; font-size: 24px; text-align: center;">Crear Cuenta Sledge</h2>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div style="background: var(--errorContainer); color: var(--onErrorContainer); padding: 10px; border-radius: 12px; margin-bottom: 12px; font-size: 14px; text-align: center;">
+          <%= error %>
+        </div>
+      <% } %>
+
+      <form action="/registro" method="POST" style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="text-field-outlined" style="background: rgba(0, 0, 0, 0.2);">
+          <span class="material-symbols-rounded">badge</span>
+          <input type="text" name="nombre" placeholder="Nombres y Apellidos completos" required>
+        </div>
+
+        <div class="text-field-outlined" style="background: rgba(0, 0, 0, 0.2);">
+          <span class="material-symbols-rounded">fingerprint</span>
+          <input 
+            type="text" 
+            name="rut" 
+            maxlength="9" 
+            placeholder="RUT sin puntos ni guión (ej: 15420192K)" 
+            required 
+            style="text-transform: uppercase;"
+            oninput="this.value = this.value.replace(/[^0-9kK]/g, '').toUpperCase().slice(0, 9)"
+          >
+        </div>
+
+        <div class="text-field-outlined" style="background: rgba(0, 0, 0, 0.2);">
+          <span class="material-symbols-rounded">mail</span>
+          <input type="email" name="gmail" placeholder="Correo electrónico" required>
+        </div>
+
+        <div class="text-field-outlined" style="background: rgba(0, 0, 0, 0.2);">
+          <span class="material-symbols-rounded">key</span>
+          <input type="password" name="password" placeholder="Contraseña segura" minlength="8" autocomplete="new-password" required>
+        </div>
+
+        <button type="submit" class="btn-filled" style="margin-top: 8px;">Registrarse</button>
+      </form>
+
+      <p style="text-align: center; font-size: 14px; margin-top: 16px; color: var(--onSurfaceVariant);">
+        ¿Ya tienes cuenta? <a href="/" style="color: var(--primary); text-decoration: none; font-weight: bold;">Inicia sesión aquí</a>
+      </p>
+    </div>
+
+  </div>
+  <script src="/js/client.js"></script>
+</body>
+</html>

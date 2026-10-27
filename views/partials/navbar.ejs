@@ -1,0 +1,93 @@
+<% const rolNavegacion = String((typeof user !== 'undefined' && user && user.rol) || '').trim().toLowerCase(); %>
+<% const puedeGestionarTurnos = rolNavegacion !== 'usuario / esquiador'; %>
+<script>window.serverUserPreferences = <%- JSON.stringify(typeof userPreferences !== 'undefined' ? userPreferences : {}).replace(/</g, '\\u003c') %>;</script>
+<nav class="navigation-bar">
+  <button type="button" id="sidebarToggle" class="sidebar-collapse-toggle" aria-expanded="true" aria-label="Colapsar barra lateral" title="Colapsar menú"><span class="material-symbols-rounded">left_panel_close</span></button>
+  <a href="/mapa" aria-label="Mapa" title="Mapa" class="nav-destination <%= page === 'mapa' ? 'active' : '' %>">
+    <div class="pill"><span class="material-symbols-rounded">map</span></div>
+    <span>Mapa</span>
+  </a>
+  <a href="/refugio" aria-label="Refugio" title="Refugio" class="nav-destination <%= page === 'refugio' ? 'active' : '' %>">
+    <div class="pill"><span class="material-symbols-rounded">menu</span></div>
+    <span>Refugio</span>
+  </a>
+  <a href="/clima" aria-label="Clima" title="Clima" class="nav-destination <%= page === 'clima' ? 'active' : '' %>">
+    <div class="pill"><span class="material-symbols-rounded">cloud</span></div>
+    <span>Clima</span>
+  </a>
+  <% if (['Mantenimiento', 'Admin', 'Super Admin'].includes(user.rol)) { %>
+    <a href="/mantenimiento" aria-label="Mantenimiento" title="Mantenimiento" class="nav-destination <%= page === 'mantenimiento' ? 'active' : '' %>">
+      <div class="pill"><span class="material-symbols-rounded">build</span></div>
+      <span>Mantenimiento</span>
+    </a>
+  <% } %>
+  <% if (['Ski Patrol', 'Admin', 'Super Admin'].includes(user.rol)) { %>
+    <a href="/administracion/incidentes" aria-label="Incidentes" title="Incidentes" class="nav-destination <%= page === 'incidentes' ? 'active' : '' %>">
+      <div class="pill"><span class="material-symbols-rounded">emergency_home</span></div>
+      <span>Incidentes</span>
+    </a>
+  <% } %>
+  <% if (['Admin', 'Super Admin'].includes(user.rol)) { %>
+    <a href="/administracion" aria-label="Administración" title="Administración" class="nav-destination <%= page === 'administracion' ? 'active' : '' %>">
+      <div class="pill"><span class="material-symbols-rounded">admin_panel_settings</span></div>
+      <span>Administración</span>
+    </a>
+  <% } %>
+  <% if (puedeGestionarTurnos) { %>
+    <a href="/turnos" aria-label="Turnos" title="Administración · Turnos" class="nav-nested-link <%= page === 'turnos' ? 'active' : '' %>">
+      <span class="material-symbols-rounded">calendar_month</span><span>Turnos</span>
+    </a>
+  <% } %>
+  <a href="/usuario" aria-label="Usuario" title="Usuario" class="nav-destination <%= page === 'usuario' ? 'active' : '' %>">
+    <div class="pill"><span class="material-symbols-rounded">person</span></div>
+    <span>Usuario</span>
+  </a>
+</nav>
+<aside id="globalWeatherWidget" class="global-weather-widget" aria-label="Clima actual" aria-live="polite">
+  <span class="material-symbols-rounded" aria-hidden="true">cloud</span>
+  <span class="weather-widget-location">Clima</span>
+  <span class="weather-widget-temperature">—°</span>
+  <span class="weather-widget-details">Actualizando…</span>
+</aside>
+<button type="button" class="quick-sos" aria-label="Abrir opciones de emergencia" aria-haspopup="dialog" onclick="abrirPanelSOS()">
+  <span class="material-symbols-rounded">emergency</span><span>SOS</span>
+</button>
+<dialog id="sosDialog" class="sos-dialog" aria-labelledby="sosDialogTitle">
+  <header class="sos-dialog-header">
+    <div><p>Acceso rápido</p><h2 id="sosDialogTitle">Emergencia</h2></div>
+    <div class="sos-header-actions">
+      <% if (['Operador de Refugio', 'Admin', 'Super Admin'].includes(user.rol)) { %>
+        <button type="button" aria-label="Configurar contactos de emergencia" title="Configurar contactos" onclick="alternarConfiguracionSOS()"><span class="material-symbols-rounded">settings</span></button>
+      <% } %>
+      <button type="button" aria-label="Cerrar" onclick="cerrarPanelSOS()"><span class="material-symbols-rounded">close</span></button>
+    </div>
+  </header>
+  <p class="sos-dialog-description">Selecciona un contacto para llamar directamente. En peligro inmediato, contacta también a los servicios de emergencia locales.</p>
+  <div id="sosContactList" class="sos-phone-options">
+    <% (typeof sosContacts !== 'undefined' ? sosContacts : []).forEach(contact => { %>
+      <a href="tel:<%= contact.telefono %>" class="<%= Number(contact.es_predeterminado) === 1 ? 'is-sos-default' : '' %>">
+        <span><%= contact.nombre %><% if (Number(contact.es_predeterminado) === 1) { %><small>Predeterminado</small><% } %></span>
+        <strong><%= contact.telefono %></strong>
+      </a>
+    <% }); %>
+    <% if (!(typeof sosContacts !== 'undefined' && sosContacts.length)) { %>
+      <p class="sos-empty-state">Aún no hay contactos configurados. Si estás en peligro inmediato, contacta los servicios de emergencia locales.</p>
+    <% } %>
+  </div>
+  <% if (['Operador de Refugio', 'Admin', 'Super Admin'].includes(user.rol)) { %>
+    <section id="sosConfigPanel" class="sos-config-panel" hidden>
+      <h3>Contactos de emergencia</h3>
+      <div id="sosManageList" class="sos-manage-list"></div>
+      <form id="sosContactForm" class="sos-contact-form">
+        <input type="hidden" name="id">
+        <label>Nombre<input name="nombre" type="text" maxlength="100" required></label>
+        <label>Número telefónico<input name="telefono" type="tel" maxlength="24" inputmode="tel" required></label>
+        <div class="sos-contact-actions">
+          <button type="button" class="medical-cancel" onclick="limpiarFormularioSOS()">Cancelar</button>
+          <button type="submit" class="medical-save">Guardar contacto</button>
+        </div>
+        <p id="sosConfigStatus" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+  <% } %>
+</dialog>

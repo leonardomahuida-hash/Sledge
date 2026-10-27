@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Solicitudes</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <% const pendientes = solicitudes.filter(solicitud => solicitud.estado === 'Pendiente'); %>
+  <% const historialPropio = solicitudes.filter(solicitud => solicitud.usuario_id === user.id && (!puedeGestionarSolicitudes || solicitud.estado !== 'Pendiente')); %>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+    <div class="main-wrapper">
+      <header class="top-app-bar">
+        <div><h1>Solicitudes de equipamiento</h1><p class="request-page-subtitle"><%= pendientes.length %> pendientes de confirmación</p></div>
+        <a href="/refugio" class="icon-btn" aria-label="Volver a refugios"><span class="material-symbols-rounded">arrow_back</span></a>
+      </header>
+      <main class="screen-content request-inbox">
+        <p id="requestInboxStatus" class="request-inbox-status" role="status" aria-live="polite"></p>
+        <% if (puedeGestionarSolicitudes) { %>
+          <section class="request-inbox-pending">
+            <h2>Pendientes</h2>
+            <% if (!pendientes.length) { %><p class="request-inbox-empty">No hay solicitudes por confirmar.</p><% } %>
+            <% pendientes.forEach(solicitud => { %>
+              <article class="request-inbox-card" data-request-id="<%= solicitud.id %>">
+                <header><div><strong><%= solicitud.solicitante %></strong><span><%= solicitud.nombre_refugio %></span></div><time><%= solicitud.creado_en %></time></header>
+                <ul><% solicitud.items.forEach(item => { %><li><strong><%= item.cantidad %> × <%= item.nombre %></strong><span><%= item.categoria %><% if (item.modelo) { %> · <%= item.modelo %><% } %><% if (item.fecha_vencimiento) { %> · vence <%= item.fecha_vencimiento %><% } %></span></li><% }); %></ul>
+                <footer><a href="/refugio/<%= solicitud.refugio_id %>">Abrir refugio</a><div>
+                  <button type="button" data-request-decision="Rechazada" data-refuge-id="<%= solicitud.refugio_id %>">Rechazar</button>
+                  <button type="button" data-request-decision="Aprobada" data-refuge-id="<%= solicitud.refugio_id %>">Confirmar salida</button>
+                </div></footer>
+              </article>
+            <% }); %>
+          </section>
+        <% } %>
+
+        <details id="historial" class="request-inbox-history" <%= !puedeGestionarSolicitudes ? 'open' : '' %>>
+          <summary><span><h2>Historial de mis solicitudes</h2><small>Estado de solicitudes de todos tus refugios</small></span><span class="history-count"><%= historialPropio.length %></span></summary>
+          <% if (!historialPropio.length) { %><p class="request-inbox-empty">Todavía no tienes solicitudes.</p><% } %>
+          <% historialPropio.forEach(solicitud => { %>
+            <article class="request-history-row">
+              <div><strong><%= solicitud.nombre_refugio %></strong><span><%= solicitud.items.map(item => `${item.cantidad} × ${item.nombre}`).join(' · ') %></span><time><%= solicitud.creado_en %></time></div>
+              <span class="request-status request-status-<%= solicitud.estado.toLowerCase() %>"><%= solicitud.estado %></span>
+            </article>
+          <% }); %>
+        </details>
+      </main>
+    </div>
+  </div>
+  <script src="/js/client.js"></script>
+</body>
+</html>

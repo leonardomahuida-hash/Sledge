@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Mapa</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+  <!-- CSS Leaflet cargado explícitamente -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+
+    <div class="main-wrapper">
+      <header class="top-app-bar">
+        <h1>Mapa de Refugios</h1>
+        <% if (puedeCrearRefugios) { %>
+          <button id="addRefugioMode" class="map-add-button" type="button" onclick="activarModoColocacionRefugio()" aria-label="Agregar refugio" title="Agregar refugio">
+            <span class="material-symbols-rounded">add_location_alt</span>
+            <span class="map-add-label">Agregar refugio</span>
+          </button>
+        <% } %>
+      </header>
+
+      <main class="map-screen-content">
+        <div class="map-frame">
+          <div id="map" role="application" aria-label="Mapa con ubicaciones de refugios"></div>
+          <button id="mapPanelToggle" class="map-panel-toggle" type="button" aria-controls="mapLayersPanel" aria-expanded="true" title="Ocultar filtros del mapa">
+            <span class="material-symbols-rounded" aria-hidden="true">visibility</span>
+            <span class="map-panel-toggle-label">Ocultar filtros</span>
+          </button>
+          <aside id="mapLayersPanel" class="map-layers-panel" aria-label="Filtros de mapa y estado de pistas">
+            <h2>Capas y pistas</h2>
+            <label>Zona
+              <select id="mapZoneFilter">
+                <option value="">Todas las zonas</option>
+                <option>Riesgo de avalancha</option><option>Grietas</option><option>Zona segura</option>
+              </select>
+            </label>
+            <label>Estado de pista
+              <select id="mapTrailFilter">
+                <option value="">Todos los estados</option>
+                <option>Abierta</option><option>Cerrada</option><option>Mantenimiento</option>
+              </select>
+            </label>
+            <label>Ordenar
+              <select id="mapSortOrder"><option value="nombre">Nombre</option><option value="estado">Estado</option></select>
+            </label>
+            <label class="map-layer-toggle"><input id="showSheltersLayer" type="checkbox" checked> Refugios</label>
+            <% if (user.rol !== 'Usuario / Esquiador') { %>
+              <label class="map-layer-toggle"><input id="showPatrolLayer" type="checkbox"> Patrulleros activos</label>
+            <% } %>
+            <% if (user.rol === 'Ski Patrol') { %>
+              <label class="map-layer-toggle map-share-toggle"><input id="sharePatrolLocation" type="checkbox"> Compartir mi ubicación</label>
+              <p id="patrolLocationStatus" role="status" aria-live="polite"></p>
+            <% } %>
+            <ul id="mapTrailsList" class="map-trails-list"></ul>
+            <% if (puedeCrearRefugios) { %>
+              <section class="map-draw-toolbar" aria-label="Herramienta para dibujar zonas o pistas">
+                <h3>Dibujar en el mapa</h3>
+                <label>Elemento
+                  <select id="mapDrawType"><option value="Riesgo de avalancha">Zona de riesgo / avalancha</option><option value="Zona segura">Zona segura / refugio</option><option value="Grietas">Zona de grietas</option><option value="Pista">Pista</option></select>
+                </label>
+                <label>Nombre<input id="mapDrawName" maxlength="100" placeholder="Nombre del área o pista"></label>
+                <label id="mapDrawTrailStateField" hidden>Estado de pista
+                  <select id="mapDrawTrailState"><option>Abierta</option><option>Cerrada</option><option>Mantenimiento</option></select>
+                </label>
+                <div class="map-draw-actions">
+                  <button id="startMapDrawing" type="button">Iniciar dibujo</button>
+                  <button id="saveMapDrawing" type="button" disabled>Guardar dibujo</button>
+                  <button id="cancelMapDrawing" type="button" disabled>Cancelar</button>
+                </div>
+                <p id="mapDrawingStatus" role="status" aria-live="polite">Selecciona un tipo y marca puntos sobre el mapa.</p>
+              </section>
+              <details class="map-layer-admin">
+                <summary>Administrar zonas y pistas</summary>
+                <h4>Zonas de seguridad</h4>
+                <ul id="mapZonesList" class="map-trails-list"></ul>
+                <h4>Pistas</h4>
+                <p class="map-admin-hint">Modifica el estado aquí; los elementos sin geometría también pueden administrarse.</p>
+                <p id="mapAdminStatus" role="status" aria-live="polite"></p>
+              </details>
+            <% } %>
+            <% if (!zonas.length) { %><p class="map-data-note">No hay zonas de seguridad delimitadas. No usar el mapa como fuente única para decisiones de terreno.</p><% } %>
+            <% if (!pistas.length) { %><p class="map-data-note">Las pistas no están configuradas.</p><% } %>
+          </aside>
+          <div id="map-placement-hint" class="map-placement-hint" hidden>
+            <span>Haz clic en el mapa para colocar el refugio</span>
+            <button type="button" onclick="cancelarColocacionRefugio()">Cancelar</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="modalCrearRefugio" class="map-modal-overlay" aria-hidden="true">
+    <section class="map-dialog" role="dialog" aria-modal="true" aria-labelledby="tituloCrearRefugio">
+      <h2 id="tituloCrearRefugio">Nuevo refugio</h2>
+      <p class="map-dialog-description">Confirma los datos de la ubicación seleccionada.</p>
+      <form id="formCrearRefugio">
+        <label class="map-form-field">
+          <span>Nombre</span>
+          <input name="nombre" type="text" maxlength="120" required autocomplete="off">
+        </label>
+        <label class="map-form-field">
+          <span>Zona</span>
+          <input name="zona" type="text" maxlength="80" required autocomplete="off">
+        </label>
+        <div class="map-form-row">
+          <label class="map-form-field">
+            <span>Estado</span>
+            <select name="estado">
+              <option value="Operativo">Operativo</option>
+              <option value="Fuera de servicio">Fuera de servicio</option>
+            </select>
+          </label>
+          <div class="map-form-field inventory-capacity-note">La capacidad se calculará automáticamente al agregar equipamiento.</div>
+        </div>
+        <div class="map-form-row">
+          <label class="map-form-field">
+            <span>Latitud</span>
+            <input name="lat" id="nuevoRefugioLat" type="number" step="any" readonly required>
+          </label>
+          <label class="map-form-field">
+            <span>Longitud</span>
+            <input name="lng" id="nuevoRefugioLng" type="number" step="any" readonly required>
+          </label>
+        </div>
+        <p id="errorCrearRefugio" class="map-form-error" role="alert"></p>
+        <div class="map-dialog-actions">
+          <button type="button" class="map-cancel-button" onclick="cancelarColocacionRefugio()">Cancelar</button>
+          <button type="submit" class="map-save-button">Guardar refugio</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script>
+    window.refugiosData = <%- JSON.stringify(refugios).replace(/</g, '\\u003c') %>;
+    window.zonasMapaData = <%- JSON.stringify(zonas).replace(/</g, '\\u003c') %>;
+    window.pistasMapaData = <%- JSON.stringify(pistas).replace(/</g, '\\u003c') %>;
+    window.puedeCrearRefugios = <%= puedeCrearRefugios ? 'true' : 'false' %>;
+    window.puedeCompartirUbicacion = <%= user.rol === 'Ski Patrol' ? 'true' : 'false' %>;
+  </script>
+  <!-- JS Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/js/client.js"></script>
+</body>
+</html>

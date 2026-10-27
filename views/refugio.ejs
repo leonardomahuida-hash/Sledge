@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Refugio</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+
+    <div class="main-wrapper">
+      <header class="top-app-bar refuge-top-app-bar">
+        <h1>Refugio</h1>
+        <div class="refuge-header-actions">
+          <% if (puedeGestionarSolicitudes) { %>
+            <a href="/refugio/solicitudes" class="refuge-inbox-link" aria-label="Solicitudes pendientes: <%= cantidadSolicitudesPendientes %>">
+              <span class="material-symbols-rounded">inbox</span><span>Solicitudes</span>
+              <% if (cantidadSolicitudesPendientes > 0) { %><strong class="notification-count"><%= cantidadSolicitudesPendientes %></strong><% } %>
+            </a>
+          <% } %>
+          <% if (puedeSolicitarEquipamiento) { %>
+            <a href="/refugio/solicitudes#historial" class="refuge-history-link" title="Historial de mis solicitudes">
+              <span class="material-symbols-rounded">history</span><span>Historial</span>
+              <% if (cantidadSolicitudesResueltas > 0) { %><small><%= cantidadSolicitudesResueltas %></small><% } %>
+            </a>
+          <% } %>
+        <% if (puedeCrearRefugios) { %>
+          <a href="/mapa?crearRefugio=1" class="map-add-button" aria-label="Agregar refugio" title="Agregar refugio">
+            <span class="material-symbols-rounded">add_location_alt</span><span class="map-add-label">Agregar refugio</span>
+          </a>
+        <% } %>
+        <% if (typeof puedeVerRecomendacionIA !== 'undefined' && puedeVerRecomendacionIA) { %>
+          <button type="button" class="medical-save ai-open-button" id="openMountainRecommendation" <%= refugios.length ? '' : 'disabled' %>>
+            <span class="material-symbols-rounded">auto_awesome</span> Recomendación de IA
+          </button>
+        <% } %>
+        </div>
+      </header>
+
+      <main class="screen-content">
+        <div class="search-bar">
+          <span class="material-symbols-rounded">search</span>
+          <input type="text" placeholder="Buscar Refugio">
+          <span class="material-symbols-rounded">mic</span>
+        </div>
+
+        <section class="refuge-list" aria-label="Refugios">
+          <% if (puedeVerPanelInventario) { %>
+            <details class="inventory-dashboard">
+              <summary id="inventoryDashboardTitle">Estado global del inventario</summary>
+              <div class="inventory-dashboard-content">
+                <div class="inventory-chart"><canvas id="inventoryStatusChart" aria-label="Gráfico de inventario por estado"></canvas></div>
+                <p id="inventoryChartStatus" role="status" aria-live="polite"></p>
+                <section class="medical-expiry-alert" aria-labelledby="medicalExpiryTitle">
+                  <h3 id="medicalExpiryTitle">Insumos médicos próximos a vencer</h3>
+                  <ul id="medicalExpiryList"><li>Cargando...</li></ul>
+                </section>
+              </div>
+            </details>
+          <% } %>
+          <% refugios.forEach(r => { %>
+            <article class="refuge-card">
+              <div class="refuge-card-main">
+                <span class="refuge-card-icon material-symbols-rounded">home</span>
+                <div class="refuge-card-title"><h2><%= r.nombre %></h2><p><%= r.zona %></p></div>
+                <div class="refuge-statuses">
+                  <span class="refuge-status <%= r.estado === 'Operativo' ? 'is-operational' : 'is-offline' %>"><%= r.estado %></span>
+                  <% if (r.alertaStockBajo) { %><span class="refuge-status is-low-stock" role="status">Stock bajo</span><% } %>
+                </div>
+              </div>
+              <div class="refuge-inventory">
+                <div class="refuge-inventory-heading"><span>Inventario disponible</span><strong><%= r.porcentajeCalculado %>%</strong></div>
+                <progress max="100" value="<%= r.porcentajeCalculado %>" aria-label="Inventario disponible: <%= r.porcentajeCalculado %>%"></progress>
+                <span class="refuge-inventory-count"><%= r.total_disponible %> disponibles de <%= r.total_capacidad %></span>
+              </div>
+              <% if (r.categoriasInventario.length) { %>
+                <div class="inventory-category-list"><% r.categoriasInventario.forEach(item => { %><span><%= item.categoria %> <strong><%= item.porcentaje %>%</strong></span><% }); %></div>
+              <% } %>
+              <footer class="refuge-card-actions">
+                <a href="/refugio/<%= r.id %>" class="refuge-open-link">Abrir inventario<span class="material-symbols-rounded">arrow_forward</span></a>
+                <% if (puedeCambiarEstado) { %>
+                  <button type="button" class="refuge-toggle-state" data-refuge-toggle="<%= r.id %>" data-state="<%= r.estado %>"><span class="material-symbols-rounded"><%= r.estado === 'Operativo' ? 'pause_circle' : 'play_circle' %></span><%= r.estado === 'Operativo' ? 'Desactivar' : 'Activar' %></button>
+                <% } %>
+                <% if (puedeArchivarRefugio) { %><button type="button" class="refuge-delete-button" data-archive-refuge="<%= r.id %>" data-refuge-name="<%= r.nombre %>"><span class="material-symbols-rounded">delete</span>Retirar refugio</button><% } %>
+              </footer>
+            </article>
+          <% }); %>
+          <% if (!refugios.length) { %><p class="refuge-empty">No hay refugios registrados.</p><% } %>
+        </section>
+      </main>
+    </div>
+  </div>
+  <% if (puedeVerPanelInventario) { %><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><% } %>
+  <% if (typeof puedeVerRecomendacionIA !== 'undefined' && puedeVerRecomendacionIA) { %>
+    <dialog id="mountainRecommendationDialog" class="sos-dialog ai-dialog" aria-labelledby="mountainRecommendationTitle">
+      <header class="sos-dialog-header">
+        <div><p>Asistente de turno</p><h2 id="mountainRecommendationTitle">Recomendación de montaña</h2></div>
+        <button type="button" aria-label="Cerrar" data-close-ai-dialog><span class="material-symbols-rounded">close</span></button>
+      </header>
+      <p id="recommendationStatus" class="recommendation-status" role="status" aria-live="polite">La sugerencia se genera al solicitarla y se reutiliza durante el día, salvo cambios climáticos drásticos.</p>
+      <p id="recommendationText" class="recommendation-text">La recomendación complementa los protocolos locales y no sustituye la evaluación del personal.</p>
+      <p id="quotaNotice" class="quota-notice" hidden></p>
+      <section class="pack-checklist" aria-labelledby="packChecklistTitle">
+        <h3 id="packChecklistTitle">Verificación de mochila</h3>
+        <p>Confirma el equipo que llevas antes de salir.</p>
+        <label><input type="checkbox" data-critical="true"> Botiquín completo</label>
+        <label><input type="checkbox" data-critical="true"> Radio de comunicación</label>
+        <label><input type="checkbox" data-critical="true"> Baliza y receptor de avalanchas</label>
+        <label><input type="checkbox" data-critical="true"> Pala y sonda</label>
+        <label><input type="checkbox"> Agua y protección térmica</label>
+        <p id="packWarning" class="pack-warning" role="alert" hidden>Falta equipamiento crítico. Revisa el protocolo local antes de iniciar el turno.</p>
+      </section>
+      <button id="generateRecommendation" type="button" class="medical-save">Actualizar sugerencia</button>
+    </dialog>
+  <% } %>
+  <script src="/js/client.js"></script>
+</body>
+</html>

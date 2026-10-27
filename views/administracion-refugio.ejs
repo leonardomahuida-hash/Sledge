@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Configuración de montaña</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+    <div class="main-wrapper">
+      <header class="top-app-bar"><h1>Configuración de montaña</h1></header>
+      <main class="screen-content settings-screen">
+        <section class="climate-card">
+          <h2>Ubicación global de la montaña</h2>
+          <p>Estos datos se aplican a todo el centro de esquí y alimentan el pronóstico y las recomendaciones de IA.</p>
+          <form id="refugioConfigForm" class="climate-form">
+            <label>Nombre de la Montaña / Centro
+              <input name="nombre" type="text" maxlength="120" required value="<%= montana ? montana.nombre : 'Centro de Montaña Farellones' %>">
+            </label>
+            <div class="climate-form-row">
+              <label>Latitud
+                <input name="latitud" type="number" min="-90" max="90" step="any" required value="<%= montana ? montana.latitud : -33.352 %>">
+              </label>
+              <label>Longitud
+                <input name="longitud" type="number" min="-180" max="180" step="any" required value="<%= montana ? montana.longitud : -70.325 %>">
+              </label>
+            </div>
+            <label>Altitud sobre el nivel del mar (m)
+              <input name="altura" type="number" min="0" max="9000" step="1" required value="<%= montana ? montana.altura : 2340 %>">
+            </label>
+            <div class="climate-form-actions">
+              <button type="submit" class="medical-save">Guardar configuración de montaña</button>
+              <a class="medical-cancel climate-back-link" href="/clima">Ver clima</a>
+            </div>
+            <p id="refugioConfigStatus" role="status" aria-live="polite"></p>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script>
+    const form = document.getElementById('refugioConfigForm');
+    if (form) {
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const status = document.getElementById('refugioConfigStatus');
+        const submit = form.querySelector('button[type="submit"]');
+        submit.disabled = true;
+        status.textContent = '';
+        try {
+          const response = await fetch('/administracion/refugio', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(Object.fromEntries(new FormData(form)))
+          });
+          const result = await response.json();
+          if (!response.ok || !result.success) throw new Error(result.error || 'No se pudo guardar la configuración.');
+          status.textContent = 'Configuración de montaña guardada.';
+        } catch (error) {
+          status.textContent = error.message;
+        } finally {
+          submit.disabled = false;
+        }
+      });
+    }
+  </script>
+</body>
+</html>

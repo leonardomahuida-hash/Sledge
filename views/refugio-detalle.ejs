@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - <%= refugio.nombre %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+
+    <div class="main-wrapper">
+      <header class="top-app-bar">
+        <a href="/refugio" style="color: var(--onSurface); text-decoration: none; margin-right: 12px;">
+          <span class="material-symbols-rounded">arrow_back</span>
+        </a>
+        <h1 style="flex: 1;"><%= refugio.nombre %></h1>
+        <% if (puedeGestionarEquipamiento) { %>
+          <button type="button" class="medical-save" onclick="abrirCargaMasiva()">Carga Masiva de Equipos</button>
+        <% } %>
+        <% if (['Mantenimiento', 'Admin', 'Super Admin'].includes(user.rol)) { %><a class="medical-cancel" href="/mantenimiento">Gestionar mantenciones</a><% } %>
+      </header>
+
+      <main class="screen-content">
+        <!-- HUP-039: Buscador Predictivo -->
+        <div class="search-bar">
+          <span class="material-symbols-rounded">search</span>
+          <input type="text" id="searchPredictivo" placeholder="Buscar por nombre o código de barra...">
+          <span class="material-symbols-rounded">barcode_reader</span>
+        </div>
+        <p id="equipmentActionStatus" class="equipment-request-status" role="status" aria-live="polite"></p>
+
+        <section class="equipment-products" aria-label="Inventario">
+          <% if (!categoriasEquipamiento.length) { %><p class="equipment-empty">Todavía no hay equipamiento registrado.</p><% } %>
+          <% categoriasEquipamiento.forEach(categoria => { %>
+            <section class="equipment-category">
+              <header class="equipment-category-header"><div><h2><%= categoria.nombre %></h2><span><%= categoria.productos.length %> productos</span></div>
+                <% if (puedeGestionarEquipamiento) { %><button type="button" data-archive-category="<%= categoria.nombre %>">Eliminar categoría</button><% } %>
+              </header>
+              <div class="equipment-category-products">
+                <% categoria.productos.forEach(grupo => { %>
+                  <details class="equipment-product">
+                    <summary>
+                      <span class="equipment-product-icon material-symbols-rounded"><%= grupo.categoria.toLowerCase().includes('radio') ? 'settings_input_antenna' : grupo.categoria.toLowerCase().includes('botiqu') || grupo.categoria.toLowerCase().includes('médic') ? 'medical_services' : grupo.categoria.toLowerCase().includes('trine') ? 'sledding' : grupo.categoria.toLowerCase().includes('camilla') ? 'airline_seat_flat' : 'inventory_2' %></span>
+                      <span class="equipment-product-copy"><strong><%= grupo.nombre %></strong><span><%= grupo.modelo || 'Modelo no especificado' %></span></span>
+                      <span class="equipment-product-stock"><strong><%= grupo.disponibles %> / <%= grupo.totales %></strong><span>disponibles · <%= grupo.enUso %> en uso · <%= grupo.mantenimiento %> en mantenimiento · <%= grupo.noDisponible %> no disponibles</span></span>
+                      <span class="material-symbols-rounded equipment-product-chevron">expand_more</span>
+                    </summary>
+                    <div class="equipment-lots">
+                      <% grupo.lotes.forEach(lote => { %>
+                        <article class="equipment-lot">
+                          <div class="equipment-lot-info">
+                            <% if (lote.imagenVisible) { %><img class="equipment-lot-image" src="<%= lote.imagen %>" alt="<%= grupo.nombre %>" loading="lazy"><% } %>
+                            <strong>Lote <%= lote.codigo %></strong>
+                            <span>En inventario: <%= lote.disponibles %> disponibles · <%= lote.en_uso %> en uso</span>
+                            <% if (lote.mantenimiento > 0) { %><span class="equipment-maintenance-count">En mantenimiento: <%= lote.mantenimiento %></span><% } %>
+                            <% if (lote.fecha_vencimiento) { %><span>Vence: <%= lote.fecha_vencimiento %></span><% } %>
+                            <% if (lote.bateria !== null && grupo.categoria.toLowerCase().includes('radio')) { %><span>Batería: <%= lote.bateria %>%</span><% } %>
+                            <% if (lote.tipo_fijacion) { %><span>Fijación: <%= lote.tipo_fijacion %></span><% } %>
+                            <% if (lote.vencido) { %><span class="equipment-expired">Vencido · No disponible para solicitar</span><% } %>
+                            <% if (grupo.categoria.toLowerCase().includes('botiqu')) { %>
+                              <span class="medkit-state <%= lote.estado === 'Incompleto' ? 'is-incomplete' : '' %>"><%= lote.estado === 'Incompleto' ? 'Botiquín incompleto' : 'Botiquín completo' %></span>
+                              <% if (lote.insumosBotiquin.length) { %>
+                                <ul class="medkit-supplies-list"><% lote.insumosBotiquin.forEach(insumo => { %>
+                                  <li class="<%= insumo.cantidad_disponible < insumo.cantidad_critica ? 'is-incomplete' : '' %>">
+                                    <%= insumo.nombre_insumo %>: <strong><%= insumo.cantidad_disponible %></strong> / crítica <%= insumo.cantidad_critica %>
+                                  </li>
+                                <% }); %></ul>
+                              <% } else { %><span>Sin insumos configurados</span><% } %>
+                              <% if (puedeGestionarEquipamiento) { %>
+                                <form class="medkit-supply-form" data-supply-url="/refugio/<%= refugio.id %>/equipos/<%= lote.id %>/botiquin-insumos">
+                                  <label>Insumo<input name="nombre_insumo" maxlength="120" required placeholder="Ej.: Gasa estéril"></label>
+                                  <label>Cantidad<input type="number" name="cantidad_disponible" min="0" max="100000" required></label>
+                                  <label>Cantidad crítica<input type="number" name="cantidad_critica" min="0" max="100000" required></label>
+                                  <button type="submit">Agregar insumo</button>
+                                </form>
+                              <% } %>
+                            <% } %>
+                          </div>
+                          <div class="equipment-lot-actions">
+                            <% if (lote.disponibleSolicitud && lote.disponibles > 0) { %><span class="equipment-available">Disponible · <%= lote.disponibles %></span><% } else { %><span class="equipment-unavailable"><%= lote.en_uso > 0 ? `Prestado: ${lote.en_uso}` : lote.mantenimiento > 0 ? 'Sin unidades disponibles' : 'No disponible' %></span><% } %>
+                            <% if (['Mantenimiento', 'Admin', 'Super Admin'].includes(user.rol)) { %><a class="equipment-maintenance-link" href="/mantenimiento?refugio_id=<%= refugio.id %>&amp;equipo_id=<%= lote.id %>">Reportar Falla</a><% } %>
+                            <% if (puedeSolicitarEquipamiento && lote.disponibleSolicitud && lote.disponibles > 0) { %>
+                              <form class="equipment-request-form" data-request-url="/refugio/<%= refugio.id %>/solicitudes" data-equipment-name="<%= grupo.nombre %>">
+                                <input type="hidden" name="equipamiento_id" value="<%= lote.id %>">
+                                <label>Unidades<input type="number" name="cantidad" min="1" max="<%= lote.disponibles %>" value="1" required></label>
+                                <button type="submit">Solicitar <%= grupo.nombre %></button>
+                              </form>
+                            <% } %>
+                            <% if (puedeGestionarEquipamiento) { %><button type="button" class="equipment-delete-button" data-archive-equipment="<%= lote.id %>" data-equipment-name="<%= grupo.nombre %>">Eliminar lote</button><% } %>
+                          </div>
+                        </article>
+                      <% }); %>
+                    </div>
+                  </details>
+                <% }); %>
+              </div>
+            </section>
+          <% }); %>
+        </section>
+
+        <% if (prestamosActivos.length) { %>
+          <section class="equipment-active-loans">
+            <h2>Equipo por devolver</h2>
+            <% prestamosActivos.forEach(prestamo => { %>
+              <% prestamo.items.forEach(item => { const pendiente = item.cantidad_entregada - item.cantidad_devuelta; const esRadio = item.categoria.toLowerCase().includes('radio'); const esBotiquin = item.categoria.toLowerCase().includes('botiqu') || item.categoria.toLowerCase().includes('insumos médicos'); %>
+                <article class="equipment-return-card">
+                  <header><div><strong><%= item.nombre %></strong><span><%= prestamo.solicitante %> · Entregado: <%= item.cantidad_entregada %></span></div><span class="return-pending-count"><%= pendiente %> pendiente(s)</span></header>
+                  <form class="equipment-return-form" data-return-url="/refugio/<%= refugio.id %>/prestamos/<%= prestamo.id %>/items/<%= item.id %>/devolucion">
+                    <label>Cantidad recibida<input type="number" name="cantidad" min="1" max="<%= pendiente %>" value="<%= pendiente %>" required></label>
+                    <% if (!esBotiquin) { %><label>Unidades dañadas<input type="number" name="cantidad_danada" min="0" max="<%= pendiente %>" value="0" required></label><% } %>
+                    <% if (esRadio) { %><label>Carga de la radio (%)<input type="number" name="bateria" min="0" max="100" value="<%= item.bateria || 0 %>" required></label><% } %>
+                    <% if (esBotiquin) { %><label class="return-checkbox"><input type="checkbox" name="botiquin_usado"> Botiquín utilizado; retirar del inventario</label><% } %>
+                    <label class="return-notes">Observaciones<textarea name="observaciones" rows="1" maxlength="500" placeholder="Daño o revisión pendiente"></textarea></label>
+                    <button type="submit">Registrar devolución</button>
+                  </form>
+                </article>
+              <% }); %>
+            <% }); %>
+            <p id="equipmentReturnStatus" class="equipment-request-status" role="status" aria-live="polite"></p>
+          </section>
+        <% } %>
+
+        <!-- FAB de Administración -->
+        <% if (puedeGestionarEquipamiento) { %>
+          <div style="position: fixed; bottom: 170px; right: 24px; z-index: 150;">
+            <button class="btn-tonal-fab" type="button" aria-label="Agregar equipamiento" onclick="abrirCatalogoEquipamiento()">
+              <span class="material-symbols-rounded">add</span>
+            </button>
+          </div>
+        <% } %>
+      </main>
+    </div>
+  </div>
+
+  <% if (puedeGestionarEquipamiento) { %>
+    <dialog id="bulkEquipmentDialog" class="equipment-dialog native-equipment-dialog">
+      <header class="equipment-dialog-header"><h2>Carga Masiva de Equipos</h2><button type="button" class="icon-btn" data-close-bulk-upload aria-label="Cerrar">×</button></header>
+      <p>Columnas requeridas: codigo, tipo, estado, refugio_id, nombre, cantidad. Se aceptan archivos CSV y XLSX.</p>
+      <form id="bulkEquipmentForm" enctype="multipart/form-data" data-upload-url="/refugio/<%= refugio.id %>/equipos/importar">
+        <label>Archivo de equipos<input type="file" name="archivo" accept=".csv,.xlsx" required></label>
+        <button type="submit" class="medical-save">Cargar equipos</button>
+        <p id="bulkEquipmentStatus" role="status" aria-live="polite"></p>
+      </form>
+    </dialog>
+    <div id="modalEquipo" class="modal equipment-modal" aria-hidden="true">
+      <section class="modal-content equipment-dialog" role="dialog" aria-modal="true" aria-labelledby="equipmentDialogTitle">
+        <header class="equipment-dialog-header">
+          <h2 id="equipmentDialogTitle">Agregar equipamiento</h2>
+          <button type="button" class="icon-btn" aria-label="Cerrar" onclick="cerrarModalEquipamiento()"><span class="material-symbols-rounded">close</span></button>
+        </header>
+        <div id="equipmentCatalog" class="equipment-catalog">
+          <button type="button" class="equipment-option" data-equipment-name="Radio portátil" data-equipment-category="Radios" data-equipment-kind="radio">
+            <span class="material-symbols-rounded">settings_input_antenna</span><strong>Radio</strong><span>Comunicación y batería</span>
+          </button>
+          <button type="button" class="equipment-option" data-equipment-name="Botiquín de primeros auxilios" data-equipment-category="Botiquines" data-equipment-kind="medical">
+            <span class="material-symbols-rounded">medical_services</span><strong>Botiquín</strong><span>Insumos y vencimiento</span>
+          </button>
+          <button type="button" class="equipment-option" data-equipment-name="Trineo de rescate" data-equipment-category="Trineos" data-equipment-kind="sled">
+            <span class="material-symbols-rounded">sledding</span><strong>Trineo</strong><span>Traslado y fijaciones</span>
+          </button>
+          <button type="button" class="equipment-option" data-equipment-name="Camilla de rescate" data-equipment-category="Camillas" data-equipment-kind="stretcher">
+            <span class="material-symbols-rounded">airline_seat_flat</span><strong>Camilla</strong><span>Equipo de traslado</span>
+          </button>
+          <button type="button" class="equipment-option equipment-option-custom" data-equipment-kind="custom">
+            <span class="material-symbols-rounded">add_box</span><strong>Otro equipamiento</strong><span>Definir nombre y categoría</span>
+          </button>
+        </div>
+        <form id="equipmentForm" action="/refugio/<%= refugio.id %>/equipo" method="POST" class="equipment-form" hidden>
+          <button type="button" class="equipment-back" onclick="volverCatalogoEquipamiento()"><span class="material-symbols-rounded">arrow_back</span> Catálogo</button>
+          <input type="hidden" name="categoria" id="equipmentCategory">
+          <label class="equipment-field" id="equipmentNameField">Nombre<input type="text" name="nombre" id="equipmentName" maxlength="120" required></label>
+          <label class="equipment-field">Modelo (opcional)<input type="text" name="modelo" maxlength="120"></label>
+          <label class="equipment-field" id="customCategoryField" hidden>Categoría
+            <select id="customEquipmentCategory">
+              <option value="General">General</option><option value="Radios">Radios</option><option value="Botiquines">Botiquines</option>
+              <option value="Trineos">Trineos</option><option value="Camillas">Camillas</option><option value="Insumos Médicos">Insumos médicos</option>
+              <option value="Radiocomunicación">Radiocomunicación</option><option value="Medios de Traslado">Medios de traslado</option>
+            </select>
+          </label>
+          <label class="equipment-field">Descripción<textarea name="descripcion" rows="2" maxlength="500"></textarea></label>
+          <label class="equipment-field">Cantidad a agregar<input type="number" name="cantidad" min="1" max="100000" step="1" value="1" required></label>
+          <label class="equipment-field" id="equipmentExpiryField" hidden>Fecha de vencimiento<input type="date" name="fecha_vencimiento"></label>
+          <label class="equipment-field" id="equipmentBatteryField" hidden>Batería inicial (%)<input type="number" name="bateria" min="0" max="100" value="100"></label>
+          <label class="equipment-field" id="equipmentFixingField" hidden>Tipo de fijación<input type="text" name="tipo_fijacion" maxlength="120"></label>
+          <label class="equipment-field" id="equipmentImageField" hidden>URL de imagen<input type="url" name="imagen" placeholder="https://..."></label>
+          <p class="equipment-code-note">El código único se genera automáticamente al guardar.</p>
+          <div class="equipment-form-actions">
+            <button type="button" class="map-cancel-button" onclick="cerrarModalEquipamiento()">Cancelar</button>
+            <button type="submit" class="map-save-button">Guardar equipamiento</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  <% } %>
+
+  <script src="/js/client.js"></script>
+</body>
+</html>

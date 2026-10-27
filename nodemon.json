@@ -1,0 +1,6 @@
+{
+  "watch": ["app.js", "config/", "controllers/", "middlewares/", "models/", "routes/", "views/"],
+  "ext": "js,json,ejs",
+  "ignore": ["sledge.db", "node_modules/", "public/"],
+  "exec": "node app.js"
+}

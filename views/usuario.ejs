@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Usuario</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/usuario.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+    <div class="main-wrapper">
+      <header class="top-app-bar">
+        <h1>Usuario</h1>
+        <a href="/ajustes" class="icon-btn settings-animated" aria-label="Ajustes" title="Ajustes"><span class="material-symbols-rounded">settings</span></a>
+      </header>
+      <main class="screen-content user-screen">
+        <section class="user-profile-summary user-profile-card">
+          <div class="user-avatar-control">
+            <img id="userAvatarImg" src="<%= user.foto_perfil || 'https://definicion.de/wp-content/uploads/2019/07/perfil-de-usuario.png' %>" alt="Perfil de <%= user.nombre %>">
+          </div>
+          <div class="user-profile-details">
+            <h2 id="profileDisplayName"><%= user.nombre %></h2>
+            <p id="displayApodo"><%= user.apodo || 'Sin apodo' %></p>
+            <span><%= user.rol %></span>
+            <p class="experience-level">Nivel de experiencia: <strong><%= user.nivel_experiencia || 'No aplica' %></strong></p>
+            <button type="button" class="user-edit-nickname" onclick="abrirEditorPerfil()">Editar perfil</button>
+          </div>
+        </section>
+        <section class="user-dashboard-cards" aria-label="Resumen de cuenta">
+          <% if (paseMontana) { %>
+            <article class="user-dashboard-card mountain-pass-card">
+              <div class="icon-avatar"><span class="material-symbols-rounded">confirmation_number</span></div>
+              <div class="mountain-pass-details">
+                <strong>Pase de montaña</strong>
+                <span>N.º <%= paseMontana.numero_pase %> · <%= paseMontana.tipo_pase %></span>
+                <span>Expira: <%= paseMontana.fecha_expiracion %></span>
+                <span class="mountain-pass-status <%= paseVigente ? 'is-valid' : 'is-invalid' %>"><%= paseVigente ? 'Activo / Válido' : (paseMontana.estado === 'Revocado' ? 'Revocado' : 'Expirado') %></span>
+                <% if (paseQr) { %><img class="mountain-pass-qr" src="<%= paseQr %>" alt="Código QR del pase de montaña"><% } %>
+                <button type="button" class="mountain-pass-edit" onclick="abrirAsociacionPase()">Actualizar pase</button>
+              </div>
+            </article>
+          <% } else { %>
+            <article class="user-dashboard-card mountain-pass-empty">
+              <div class="icon-avatar"><span class="material-symbols-rounded">confirmation_number</span></div>
+              <div><strong>Pase de montaña</strong><span>No hay un pase asociado a esta cuenta.</span>
+                <button type="button" class="mountain-pass-edit" onclick="abrirAsociacionPase()">Asociar / comprar pase</button>
+              </div>
+            </article>
+          <% } %>
+          <article class="user-dashboard-card">
+            <div class="icon-avatar"><span class="material-symbols-rounded">emergency</span></div>
+            <div><strong>Estado de emergencia</strong><span>Acceso SOS disponible · <%= contactosEmergencia.length %> contacto(s) configurado(s).</span></div>
+          </article>
+          <% if (equipoAsignado.length) { %>
+            <article class="user-dashboard-card user-equipment-card">
+              <div class="icon-avatar"><span class="material-symbols-rounded">backpack</span></div>
+              <div class="user-equipment-details">
+                <strong>Equipamiento asignado</strong>
+                <ul>
+                  <% equipoAsignado.forEach(equipo => { %>
+                    <li><%= equipo.nombre %> · <%= equipo.categoria %> · <%= equipo.estado %></li>
+                  <% }); %>
+                </ul>
+              </div>
+            </article>
+          <% } %>
+          <% if (user.rol !== 'Usuario / Esquiador') { %>
+            <a href="/turnos" class="user-dashboard-card">
+              <div class="icon-avatar"><span class="material-symbols-rounded">calendar_month</span></div>
+              <div><strong>Historial de turnos</strong><span>Calendario y horas registradas</span></div>
+            </a>
+          <% } %>
+        </section>
+        <article class="user-dashboard-card user-personal-summary">
+          <div class="icon-avatar"><span class="material-symbols-rounded">health_and_safety</span></div>
+          <div><strong>Información personal y de salud</strong><span>Los datos de contacto y salud se muestran solo al abrir la configuración.</span></div>
+          <button type="button" class="medical-save" onclick="abrirConfiguracionPersonal()">Editar información personal y de salud</button>
+        </article>
+        <a href="/logout" class="btn-filled user-signout">Cerrar sesión</a>
+      </main>
+    </div>
+  </div>
+  <dialog id="personalSettingsDialog" class="floating-dialog" aria-labelledby="personalSettingsTitle">
+    <div class="floating-dialog-content">
+      <header class="floating-dialog-header">
+        <div><p>Cuenta personal</p><h2 id="personalSettingsTitle">Información personal y de salud</h2></div>
+        <button type="button" class="medical-dialog-close" onclick="cerrarConfiguracionPersonal()" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
+      </header>
+      <form id="personalSettingsForm" class="user-personal-form">
+            <label>Teléfono de contacto<input name="telefono_contacto" type="tel" maxlength="24" value="<%= user.telefono_contacto || '' %>" autocomplete="tel"></label>
+            <label>Contacto de emergencia · nombre<input name="contacto_emergencia_nombre" type="text" maxlength="120" value="<%= user.contacto_emergencia_nombre || '' %>"></label>
+            <label>Contacto de emergencia · teléfono<input name="contacto_emergencia_telefono" type="tel" maxlength="24" value="<%= user.contacto_emergencia_telefono || '' %>" autocomplete="tel"></label>
+            <label>Grupo sanguíneo
+              <select name="grupo_sangre">
+                <% ['N/A', 'O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'].forEach(grupo => { %>
+                  <option value="<%= grupo %>" <%= grupo === (user.grupo_sangre || 'N/A') ? 'selected' : '' %>><%= grupo %></option>
+                <% }); %>
+              </select>
+            </label>
+            <label>Alergias<textarea name="alergias" rows="2" maxlength="1000"><%= user.alergias === 'N/A' ? '' : (user.alergias || '') %></textarea></label>
+            <label>Enfermedades crónicas<textarea name="enfermedades_cronicas" rows="2" maxlength="1000"><%= user.enfermedades_cronicas === 'N/A' ? '' : (user.enfermedades_cronicas || '') %></textarea></label>
+            <label>Medicamentos diarios<textarea name="medicamentos_diarios" rows="2" maxlength="1000"><%= user.medicamentos_diarios === 'N/A' ? '' : (user.medicamentos_diarios || '') %></textarea></label>
+            <label>Estado / disponibilidad
+              <select name="estado_disponibilidad">
+                <% ['Disponible', 'En servicio', 'Descanso', 'No disponible'].forEach(estado => { %>
+                  <option value="<%= estado %>" <%= estado === (user.estado_disponibilidad || 'Disponible') ? 'selected' : '' %>><%= estado %></option>
+                <% }); %>
+              </select>
+            </label>
+            <button type="submit" class="medical-save">Guardar datos personales</button>
+            <p id="personalSettingsStatus" role="status" aria-live="polite"></p>
+      </form>
+      <section class="profile-account-actions">
+        <h3>Seguridad de la cuenta</h3>
+        <form id="passwordChangeForm" class="profile-password-form">
+          <label class="profile-form-field">Contraseña actual<input name="current_password" type="password" autocomplete="current-password" required></label>
+          <label class="profile-form-field">Nueva contraseña<input name="new_password" type="password" minlength="8" autocomplete="new-password" required></label>
+          <label class="profile-form-field">Repetir nueva contraseña<input name="confirm_password" type="password" minlength="8" autocomplete="new-password" required></label>
+          <p id="passwordChangeStatus" class="profile-editor-status" role="status" aria-live="polite"></p>
+          <button type="submit" class="medical-save">Cambiar contraseña</button>
+        </form>
+      </section>
+    </div>
+  </dialog>
+  <dialog id="userProfileDialog" class="floating-dialog" aria-labelledby="profileDialogTitle">
+    <div class="floating-dialog-content">
+      <header class="floating-dialog-header">
+        <div><p>Cuenta personal</p><h2 id="profileDialogTitle">Editar perfil</h2></div>
+        <button type="button" class="medical-dialog-close" onclick="cerrarEditorPerfil()" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
+      </header>
+      <form id="userProfileForm">
+        <div class="profile-editor-avatar">
+          <img id="profileEditorAvatar" src="<%= user.foto_perfil || 'https://definicion.de/wp-content/uploads/2019/07/perfil-de-usuario.png' %>" alt="Vista previa del avatar">
+          <label class="profile-upload-control">Cambiar foto<input id="profilePhotoInput" type="file" accept="image/jpeg,image/png,image/webp"></label>
+        </div>
+        <label class="profile-form-field">Nombre<input id="profileNameInput" name="nombre" type="text" maxlength="120" value="<%= user.nombre %>" required></label>
+        <label class="profile-form-field">Apodo / nickname<input id="profileNicknameInput" name="apodo" type="text" maxlength="60" value="<%= user.apodo || '' %>"></label>
+        <label id="nameConfirmationField" class="profile-form-field" hidden>Contraseña actual para confirmar el cambio de nombre<input id="profileCurrentPassword" name="current_password" type="password" autocomplete="current-password"></label>
+        <p id="profileEditorStatus" class="profile-editor-status" role="status" aria-live="polite"></p>
+        <div class="profile-dialog-actions">
+          <button type="button" class="medical-cancel" onclick="cerrarEditorPerfil()">Cancelar</button>
+          <button type="submit" class="medical-save">Guardar perfil</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+  <dialog id="mountainPassDialog" class="floating-dialog" aria-labelledby="mountainPassDialogTitle">
+    <div class="floating-dialog-content">
+      <header class="floating-dialog-header">
+        <div><p>Cuenta personal</p><h2 id="mountainPassDialogTitle">Asociar pase de montaña</h2></div>
+        <button type="button" class="medical-dialog-close" onclick="cerrarAsociacionPase()" aria-label="Cerrar"><span class="material-symbols-rounded">close</span></button>
+      </header>
+      <form id="mountainPassForm" class="profile-password-form">
+        <label class="profile-form-field">Número del pase<input name="numero_pase" type="text" maxlength="40" pattern="[A-Za-z0-9-]{4,40}" autocomplete="off" required></label>
+        <label class="profile-form-field">Tipo de pase
+          <select name="tipo_pase" required>
+            <option value="Diario">Diario</option><option value="Temporada">Temporada</option>
+            <option value="Estudiante">Estudiante</option><option value="Residente">Residente</option><option value="Otro">Otro</option>
+          </select>
+        </label>
+        <label class="profile-form-field">Fecha de expiración<input name="fecha_expiracion" type="date" required></label>
+        <p class="profile-editor-status">El alta de un pase pagado debe realizarse con el centro de esquí; aquí puedes asociar un pase ya emitido.</p>
+        <p id="mountainPassStatus" class="profile-editor-status" role="status" aria-live="polite"></p>
+        <div class="profile-dialog-actions">
+          <button type="button" class="medical-cancel" onclick="cerrarAsociacionPase()">Cancelar</button>
+          <button type="submit" class="medical-save">Asociar pase</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+  <script src="/js/client.js"></script>
+</body>
+</html>

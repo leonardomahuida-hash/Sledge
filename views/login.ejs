@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Inicio de Sesión</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body style="display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.65)), url('/img/bg-mountain.jpg') no-repeat center center fixed; background-size: cover;">
+  <div style="width: 100%; max-width: 420px; padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+    
+    <div style="height: 160px; background: rgba(36, 30, 29, 0.75); backdrop-filter: blur(12px); border-radius: 24px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255, 255, 255, 0.15); padding: 16px;">
+      <img src="/img/logo.png" alt="Logo Sledge" style="max-height: 110px; max-width: 85%; object-fit: contain;">
+    </div>
+
+    <div style="background: rgba(36, 30, 29, 0.82); backdrop-filter: blur(12px); border-radius: 28px; padding: 24px; border: 1px solid rgba(255, 255, 255, 0.12);">
+      
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div style="background: var(--errorContainer); color: var(--onErrorContainer); padding: 10px; border-radius: 12px; margin-bottom: 12px; font-size: 14px; text-align: center;">
+          <%= error %>
+        </div>
+      <% } %>
+
+      <form action="/login" method="POST" style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="text-field-outlined" style="background: rgba(0, 0, 0, 0.2);">
+          <span class="material-symbols-rounded">mail</span>
+          <input type="email" name="gmail" placeholder="Gmail" required>
+        </div>
+
+        <div class="text-field-outlined" style="background: rgba(0, 0, 0, 0.2);">
+          <span class="material-symbols-rounded">visibility</span>
+          <input type="password" name="password" placeholder="Contraseña" required>
+        </div>
+
+        <button type="submit" class="btn-filled">Inicio de sesión</button>
+      </form>
+
+      <p style="text-align: center; font-size: 14px; margin-top: 16px; color: var(--onSurfaceVariant);">
+        ¿No tienes cuenta? <a href="/registro" style="color: var(--primary); text-decoration: none; font-weight: bold;">Crea una aquí</a>
+      </p>
+    </div>
+
+  </div>
+  <script src="/js/client.js"></script>
+</body>
+</html>

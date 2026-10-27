@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Mantenimiento</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+    <div class="main-wrapper">
+      <header class="top-app-bar">
+        <h1>Mantenimiento y Taller</h1>
+        <a class="medical-save" href="/mantenimiento/informe.pdf">Descargar Informe de Mantenciones (PDF)</a>
+      </header>
+      <main class="screen-content settings-screen">
+        <p id="maintenanceStatus" class="equipment-request-status" role="status" aria-live="polite"></p>
+        <section class="maintenance-section">
+          <h2>Reportar una falla</h2>
+          <% if (!equiposOperativos.length) { %><p>No hay equipos operativos con stock disponible para reportar.</p><% } %>
+          <% if (equiposOperativos.length) { %>
+            <div class="maintenance-equipment-picker">
+              <label for="maintenanceRefugeSelect">1. Refugio o área
+                <select id="maintenanceRefugeSelect" required>
+                  <option value="">Selecciona un refugio o área</option>
+                  <% [...new Map(equiposOperativos.map(equipo => [equipo.refugio_id, equipo.refugio])).entries()].forEach(([id, nombre]) => { %>
+                    <option value="<%= id %>" <%= typeof selectedRefugeId !== 'undefined' && selectedRefugeId === id ? 'selected' : '' %>><%= nombre %></option>
+                  <% }); %>
+                </select>
+              </label>
+              <label for="maintenanceEquipmentSearch">2. Buscar equipo
+                <input id="maintenanceEquipmentSearch" type="search" placeholder="Escribe nombre o código" autocomplete="off" disabled>
+              </label>
+              <label for="maintenanceEquipmentSelect">Selecciona equipo
+                <select id="maintenanceEquipmentSelect" aria-label="Equipo operativo" required disabled>
+                  <option value="">Primero selecciona un refugio o área</option>
+                  <% equiposOperativos.forEach(equipo => { %>
+                    <option value="<%= equipo.id %>" <%= typeof selectedEquipmentId !== 'undefined' && selectedEquipmentId === equipo.id ? 'selected' : '' %> data-refuge-id="<%= equipo.refugio_id %>"
+                      data-search="<%= `${equipo.nombre} ${equipo.codigo}`.toLowerCase() %>"
+                      data-name="<%= equipo.nombre %>" data-code="<%= equipo.codigo %>"
+                      data-available="<%= equipo.disponibles %>"><%= equipo.nombre %> · <%= equipo.codigo %></option>
+                  <% }); %>
+                </select>
+              </label>
+              <p id="maintenanceSelectedEquipment" class="maintenance-selected-equipment" aria-live="polite"></p>
+            </div>
+            <form class="maintenance-failure-form maintenance-nested-form" data-url="" hidden>
+              <label>Unidades afectadas<input name="cantidad" type="number" min="1" value="1" required></label>
+              <label>Detalle de falla<input name="observaciones" maxlength="500" required></label>
+              <button type="submit">Registrar falla</button>
+            </form>
+          <% } %>
+        </section>
+
+        <section class="maintenance-section">
+          <h2>Equipos inoperativos</h2>
+          <% if (!equipos.length) { %><p>No hay equipos en mantenimiento o descartados.</p><% } %>
+          <% equipos.forEach(equipo => { %>
+            <article class="maintenance-equipment-row">
+              <div><strong><%= equipo.nombre %> · <%= equipo.codigo %></strong><span><%= equipo.refugio %> · <%= equipo.tipo %></span></div>
+              <div><strong class="<%= equipo.estado === 'Descartado' ? 'maintenance-discarded' : 'maintenance-inoperable' %>"><%= equipo.estado %></strong><span><%= equipo.mantenimiento %> unidad(es) en reparación</span></div>
+              <% if (equipo.estado === 'Mantenimiento') { %>
+                <form class="maintenance-workshop-form" data-url="/mantenimiento/<%= equipo.id %>/alta-taller">
+                  <label>Fecha de salida<input type="date" name="fecha_salida" max="<%= new Date().toISOString().slice(0, 10) %>" required></label>
+                  <button type="submit">Alta de Taller · Marcar operativo</button>
+                </form>
+              <% } %>
+            </article>
+          <% }); %>
+        </section>
+
+        <section class="maintenance-section">
+          <h2>Reparaciones del mes</h2>
+          <% if (!reportes.length) { %><p>No hay reparaciones registradas este mes.</p><% } %>
+          <% reportes.forEach(reporte => { %>
+            <article class="maintenance-equipment-row">
+              <div><strong><%= reporte.equipo %> · <%= reporte.codigo %></strong><span><%= reporte.refugio %> · <%= reporte.accion %> · <%= reporte.cantidad %> unidad(es)</span></div>
+              <div><strong><%= reporte.estado_reporte %></strong><span><%= reporte.creado_en %> · Técnico: <%= reporte.tecnico %></span></div>
+              <span><%= reporte.observaciones || 'Sin observaciones' %></span>
+            </article>
+          <% }); %>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="/js/client.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Administración</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+    <div class="main-wrapper">
+      <header class="top-app-bar"><h1>Administración</h1></header>
+      <main class="screen-content settings-screen">
+        <nav class="admin-tabs" aria-label="Secciones de administración">
+          <a href="/turnos">Turnos</a>
+          <a href="#historial-turnos">Historial de turnos</a>
+          <a href="/administracion/incidentes">Incidentes</a>
+        </nav>
+        <a class="list-item admin-user-link" href="/administracion/refugio">
+          <div class="icon-avatar"><span class="material-symbols-rounded">landscape</span></div>
+          <div class="text-container"><strong>Centro de esquí y clima</strong><span>Configura código, nombre, ubicación y altura usados por el pronóstico y la IA</span></div>
+          <span class="material-symbols-rounded">chevron_right</span>
+        </a>
+        <% if (user.rol === 'Super Admin') { %>
+          <a class="list-item admin-user-link" href="/administracion/usuarios">
+            <div class="icon-avatar"><span class="material-symbols-rounded">manage_accounts</span></div>
+            <div class="text-container"><strong>Gestión de usuarios y roles</strong><span>Acceso exclusivo de Super Admin</span></div>
+            <span class="material-symbols-rounded">chevron_right</span>
+          </a>
+          <a class="list-item admin-user-link" href="/administracion/auditoria">
+            <div class="icon-avatar"><span class="material-symbols-rounded">fact_check</span></div>
+            <div class="text-container"><strong>Auditoría global</strong><span>Registro de cambios y operaciones del sistema</span></div>
+            <span class="material-symbols-rounded">chevron_right</span>
+          </a>
+        <% } %>
+        <section id="historial-turnos" class="admin-history-section">
+          <h2>Historial de Turnos y Recursos</h2>
+          <% if (!turnosHistorial.length) { %><p>No hay turnos registrados.</p><% } %>
+          <% turnosHistorial.forEach(turno => { %>
+            <article class="admin-history-row">
+              <div><strong><%= turno.nombre_usuario %></strong><span><%= turno.fecha %> · <%= turno.rol %></span></div>
+              <div><strong><%= turno.estado %></strong><span><%= turno.horas_registradas === null ? 'Horas no registradas' : `${turno.horas_registradas} h · ${turno.hora_inicio} - ${turno.hora_fin}` %></span></div>
+              <div><strong>Recursos</strong><span><%= turno.recursos || 'Sin recursos asignados' %></span></div>
+            </article>
+          <% }); %>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="/js/client.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sledge - Clima</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+</head>
+<body>
+  <div class="app-layout">
+    <%- include('partials/navbar') %>
+    <div class="main-wrapper">
+      <header class="top-app-bar">
+        <h1>Clima de montaña</h1>
+        <% if (puedeConfigurarRefugio) { %><a class="climate-config-link" href="/administracion/refugio">Configurar ubicación de Montaña / Centro de Esquí</a><% } %>
+      </header>
+      <main class="screen-content settings-screen">
+        <section class="climate-card climate-dashboard" aria-labelledby="climateLocation">
+          <div class="climate-dashboard-heading">
+            <p class="climate-eyebrow">Pronóstico del centro de esquí</p>
+            <h2 id="climateLocation"><%= refugio ? refugio.nombre : 'Sin centro configurado' %></h2>
+            <% if (refugio) { %>
+              <p>Centro configurado: <%= refugio.nombre %> · <%= refugio.latitud %>, <%= refugio.longitud %> · <span id="climateAltitude"><%= refugio.altura %></span> m s. n. m.</p>
+            <% } %>
+          </div>
+          <p id="climateStatus" class="climate-status" role="status" aria-live="polite">Consultando condiciones actuales…</p>
+          <div id="weatherSummary" class="weather-summary" hidden>
+            <div class="climate-hero">
+              <div class="climate-current-condition">
+                <span id="climateIcon" class="material-symbols-rounded" aria-hidden="true">cloud</span>
+                <span id="climateCondition">Actualizando</span>
+              </div>
+              <strong id="climateTemperature" class="climate-temperature">—°</strong>
+              <span id="climateFeelsLike" class="climate-feels-like"></span>
+              <div class="climate-current-details">
+                <span><span class="material-symbols-rounded" aria-hidden="true">air</span><span id="climateWind"></span></span>
+                <span><span class="material-symbols-rounded" aria-hidden="true">humidity_percentage</span><span id="climateHumidity"></span></span>
+                <span><span class="material-symbols-rounded" aria-hidden="true">landscape</span><span id="climateElevation"></span></span>
+              </div>
+            </div>
+            <section class="climate-forecast-section" aria-labelledby="hourlyForecastTitle">
+              <h3 id="hourlyForecastTitle">Pronóstico por hora</h3>
+              <div id="hourlyForecast" class="hourly-forecast" aria-label="Pronóstico para las próximas horas"></div>
+            </section>
+            <section class="climate-forecast-section" aria-labelledby="dailyForecastTitle">
+              <h3 id="dailyForecastTitle">Próximos 7 días</h3>
+              <div id="dailyForecast" class="daily-forecast"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="/js/client.js"></script>
+</body>
+</html>
