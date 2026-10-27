@@ -93,7 +93,6 @@ sledge/
 ├── 📄 .gitignore        # Reglas de exclusión para control de versiones Git
 ├── 📄 README.md         # Documentación técnica del proyecto
 ├── 📄 app.js            # Punto de entrada principal y bootstrap del servidor Express
-├── 📄 copia_env         # Plantilla de variables de entorno (.env de ejemplo)
 ├── 📄 nodemon.json      # Configuración de recarga automática en desarrollo
 ├── 📄 package-lock.json # Árbol de dependencias bloqueado
 └── 📄 package.json      # Manifiesto del proyecto, scripts y dependencias Node
