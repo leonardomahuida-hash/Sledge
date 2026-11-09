@@ -79,7 +79,6 @@ El sistema fue construido siguiendo el patrón de diseño **MVC (Model-View-Cont
 
 ```bash
 sledge/
-├── 📁 .vscode/          # Configuración del entorno de desarrollo (VS Code)
 ├── 📁 config/           # Parámetros de conexión a la base de datos SQLite3 y entorno
 ├── 📁 controllers/      # Lógica de negocio y manejo de peticiones (MVC)
 ├── 📁 middlewares/      # Interceptores de autenticación, sesión y validaciones
