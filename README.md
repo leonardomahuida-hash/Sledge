@@ -1,5 +1,6 @@
 <div align="center">
 
+![](https://github.com/leonardomahuida-hash/Sledge/blob/main/image-removebg-preview.png?raw=true)
 # SLEDGE
 ### Sistema Logístico de Equipos de Rescate y Geolocalización en Montaña
 
