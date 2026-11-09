@@ -6,3 +6,4 @@ config/sledge.db-shm
 config/sledge.db-wal
 *.log
 .DS_Store
+.vscode
