@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏔️ SLEDGE
+# SLEDGE
 ### Sistema Logístico de Equipos de Rescate y Geolocalización en Montaña
 
 [![Node.js](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
