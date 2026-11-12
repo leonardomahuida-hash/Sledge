@@ -174,7 +174,7 @@ npm run dev
 npm start
 ```
 
-Acceda a la aplicación desde su navegador en: `http://localhost:3000`
+Acceda a la aplicación desde su navegador en: `https://sledge-72w8.onrender.com/`
 
 ---
 
